@@ -1,0 +1,129 @@
+#include <stdlib.h>
+#include <stdio.h>
+
+typedef struct car{
+        char* color;
+        int seats;
+        int mileage;
+        }Car;
+
+typedef enum category{
+        SEATS,
+        MILEAGE,
+        }Category;
+
+void sort(int low, int high, Category x, Car* garage);
+void print_to_file(char* filename, Car* garage, int length);
+Car* scan_garage(char* filename, int length);
+void Merge(Car* garage, Car* arr1, Car* arr2, int n1, int n2, Category x);
+
+int main(int argc, char* argv[])
+{
+        if (argc !=4)
+        {
+                printf("Incorrect input.\nCorrect usage <./a.out><number of elements><input file><output file>\n");
+        return 0;
+        }
+        int numCars=atoi(argv[1]); //convert to integer
+
+        Car* garage=scan_garage(argv[2], numCars); //scan cars into a pointer to the structure
+
+        sort(0, (numCars-1), SEATS, garage); //sort the cars by seats
+        int low=0;
+        int  high, i;
+        for (i=0; i<numCars-1; i++)
+        {
+                if(garage[i].seats != garage[i+1].seats)
+                {
+                        high=i;
+                        sort(low, high, MILEAGE, garage);
+                        low=high+1;
+                }
+
+        }
+        //sort the car by mileage
+        print_to_file(argv[3], garage, numCars);
+
+        printf("The array has been sorted by seats and mileage and has been output to %s\n", argv[3]);
+free(garage);
+
+return 0;
+}
+
+Car* scan_garage(char* filename, int length) //scan from file to the garage
+{
+        FILE *file;
+        int i;
+
+        if((file=fopen(filename, "r"))==NULL)
+        {
+                printf("Couldn't open file\n");
+        return 0;
+        }
+        Car* array=malloc(sizeof(Car)*length);
+
+        for(i=0; i<length-1; i++)
+        {
+                array[i].color=malloc(5*sizeof(char));
+                fscanf(file, "%s %d %d", array[i].color, &array[i].seats, &array[i].mileage);
+        }
+
+fclose(file);
+return (array);
+}
+
+void sort(int low, int high, Category x, Car* garage) //sorting by swapping
+{
+        if(x==0)
+        {
+        Car temp;       //initialize a Car to hold while swapping
+        int c, d, position;
+                for(c=0; c<high; c++)
+                {
+                position=c; //right hand side is the same index as the left hand index
+                        for(d=c+1; d<high; d++) //i= lh index
+                        {
+                                if(garage[position].seats>garage[d].seats) position=d;
+                        }
+                        if(position !=c)
+                        {
+                                temp=garage[c];
+                                garage[c]=garage[position];
+                                garage[position]=temp;
+                        }
+                }
+        }
+        if(x==1)
+        {
+           Car temp;       //initialize a Car to hold while swapping
+        int c, d, position;
+                for(c=0; c<high; c++)
+                {
+                         position=c; //right hand side is the same index as the left hand index
+                        for(d=c+1; d<high; d++) //i= lh index
+                        {
+                                 if(garage[position].mileage>garage[d].mileage) position=d;
+                        }
+                         if(position !=c)
+                        {
+                                 temp=garage[c];
+                                garage[c]=garage[position];
+                                 garage[position]=temp;
+                        }
+                }
+        }
+}
+
+void print_to_file(char* filename, Car* garage, int length)
+{
+        int i=0;
+        FILE *file;
+        if((file=fopen(filename, "w"))==NULL)
+        {
+                printf("Unable to write to file\n");
+        }
+        for (i=0; i<length; i++)
+ {
+        fprintf(file, "%s %d %d\n", garage[i].color, garage[i].seats, garage[i].mileage);
+        }
+}
